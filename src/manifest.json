@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "version": "0.0",
+    "author": "Tweasel by Datenanfragen.de e. V.",
+    "name": "Tweasel",
+    "description": "Detect the tracking websites perform while you browse and complain about illegal tracking with the data protection authorities.",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "addon-firefox@tweasel.org",
+            "strict_min_version": "119.0"
+        }
+    },
+    "permissions": [],
+    "background": {
+        "scripts": ["background.ts"]
+    }
+}

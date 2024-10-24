@@ -1,0 +1,37 @@
+{
+    "private": true,
+    "scripts": {
+        "build": "rm -rf dist/*; parcel build",
+        "watch": "parcel watch --no-hmr",
+        "load-web-ext": "yarn web-ext run --source-dir ./dist --devtools",
+        "dev": "npm-run-all --parallel watch \"load-web-ext -- {@}\" --",
+        "bundle": "yarn build && yarn web-ext sign --source-dir ./dist"
+    },
+    "browserslist": [
+        "last 5 Chrome versions",
+        "last 5 Firefox versions"
+    ],
+    "prettier": "@baltpeter/prettier-config",
+    "dependencies": {},
+    "devDependencies": {
+        "@baltpeter/prettier-config": "^3.0.0",
+        "@baltpeter/tsconfig": "^3.0.0",
+        "@parcel/config-webextension": "^2.10.3",
+        "@types/firefox-webext-browser": "^120.0.0",
+        "npm-run-all": "^4.1.5",
+        "parcel": "^2.10.3",
+        "prettier": "^3.3.3",
+        "typescript": "5.1.6",
+        "web-ext": "^7.9.0"
+    },
+    "targets": {
+        "default": {
+            "source": [
+                "src/manifest.json"
+            ],
+            "distDir": "./dist",
+            "sourceMap": false,
+            "optimize": false
+        }
+    }
+}
