@@ -4,7 +4,7 @@
         "build": "rm -rf dist/*; parcel build",
         "watch": "parcel watch --no-hmr",
         "load-web-ext": "yarn web-ext run --source-dir ./dist --devtools",
-        "dev": "npm-run-all --parallel watch \"load-web-ext -- {@}\" --",
+        "dev": "test -d dist || yarn build; npm-run-all --parallel watch \"load-web-ext -- {@}\" --",
         "bundle": "yarn build && yarn web-ext sign --source-dir ./dist"
     },
     "browserslist": [
