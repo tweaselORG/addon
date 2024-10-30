@@ -10,8 +10,19 @@
             "strict_min_version": "119.0"
         }
     },
-    "permissions": [],
+    "permissions": ["devtools", "webRequest"],
+    "host_permissions": ["<all_urls>"],
     "background": {
         "scripts": ["background.ts"]
+    },
+    "web_accessible_resources": [
+        {
+            "resources": ["devtools-panel.html"],
+            "matches": ["<all_urls>"]
+        }
+    ],
+    "devtools_page": "devtools.html",
+    "action": {
+        "default_title": "Tweasel"
     }
 }
