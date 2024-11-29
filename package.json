@@ -12,8 +12,13 @@
         "last 5 Firefox versions"
     ],
     "prettier": "@baltpeter/prettier-config",
-    "dependencies": {},
+    "dependencies": {
+        "preact": "^10.24.3",
+        "trackhar": "file:.yalc/trackhar"
+    },
     "devDependencies": {
+        "@babel/core": "^7.12.0",
+        "@babel/plugin-transform-react-jsx": "^7.25.9",
         "@baltpeter/prettier-config": "^3.0.0",
         "@baltpeter/tsconfig": "^3.0.0",
         "@parcel/config-webextension": "^2.10.3",
@@ -23,6 +28,13 @@
         "prettier": "^3.3.3",
         "typescript": "5.1.6",
         "web-ext": "^7.9.0"
+    },
+    "alias": {
+        "react": "preact/compat",
+        "react-dom/test-utils": "preact/test-utils",
+        "react-dom": "preact/compat",
+        "react/jsx-runtime": "preact/jsx-runtime",
+        "preact/jsx-dev-runtime": "preact/jsx-runtime"
     },
     "targets": {
         "default": {

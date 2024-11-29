@@ -10,7 +10,7 @@
             "strict_min_version": "119.0"
         }
     },
-    "permissions": ["devtools", "webRequest", "webNavigation"],
+    "permissions": ["devtools", "webRequest"],
     "host_permissions": ["<all_urls>"],
     "background": {
         "scripts": ["background.ts"]

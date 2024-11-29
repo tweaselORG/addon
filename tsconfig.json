@@ -1,5 +1,10 @@
 {
     "extends": "@baltpeter/tsconfig",
     "include": ["src/**/*"],
-    "exclude": ["**/*.tmp.ts"]
+    "exclude": ["**/*.tmp.ts"],
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "jsxImportSource": "preact",
+        "resolveJsonModule": true
+    }
 }

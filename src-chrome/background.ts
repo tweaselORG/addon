@@ -1,5 +1,4 @@
-
-browser.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async () => {
     console.log('Installed!');
 });
 
