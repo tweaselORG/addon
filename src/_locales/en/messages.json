@@ -1,0 +1,18 @@
+{
+    "extensionName": {
+        "message": "Tweasel"
+    },
+    "extensionDescription": {
+        "message": "Detect the tracking websites perform while you browse and complain about illegal tracking with the data protection authorities."
+    },
+    "extensionAuthor": {
+        "message": "Tweasel by Datenanfragen.de e. V."
+    },
+
+    "home.siteUrl": {
+        "message": "Website URL:"
+    },
+    "home.analyze": {
+        "message": "Analyze"
+    }
+}

@@ -1,27 +1,22 @@
 {
+    "$schema": "https://json.schemastore.org/chrome-manifest.json",
     "manifest_version": 3,
     "version": "0.0",
-    "author": "Tweasel by Datenanfragen.de e. V.",
-    "name": "Tweasel",
-    "description": "Detect the tracking websites perform while you browse and complain about illegal tracking with the data protection authorities.",
+    "author": "__MSG_extensionAuthor__",
+    "name": "__MSG_extensionName__",
+    "description": "__MSG_extensionDescription__",
+    "default_locale": "en",
     "browser_specific_settings": {
         "gecko": {
             "id": "addon-firefox@tweasel.org",
             "strict_min_version": "119.0"
         }
     },
-    "permissions": ["devtools", "webRequest", "webNavigation"],
+    "permissions": ["webRequest", "unlimitedStorage"],
     "host_permissions": ["<all_urls>"],
     "background": {
         "scripts": ["background.ts"]
     },
-    "web_accessible_resources": [
-        {
-            "resources": ["devtools-panel.html"],
-            "matches": ["<all_urls>"]
-        }
-    ],
-    "devtools_page": "devtools.html",
     "action": {
         "default_title": "Tweasel"
     }
