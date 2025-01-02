@@ -14,5 +14,8 @@
     },
     "home.analyze": {
         "message": "Analyze"
+    },
+    "home.missing-containers": {
+        "message": "This extension requires the <a href=\"https://wiki.mozilla.org/Security/Contextual_Identity_Project/Containers\">Containers feature of Firefox</a> to be activiated to isolate the webpages context. Please set <code>privacy.userContext.enabled</code> in your <code>about:config</code> to <code>true</code>."
     }
 }
