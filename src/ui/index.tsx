@@ -10,6 +10,8 @@ const Ui = () => (
                 <Route path="/">
                     <Home />
                 </Route>
+
+                <Route path="/analysis/:reference">{(params) => params.reference}</Route>
             </Switch>
         </Router>
     </>

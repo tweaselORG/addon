@@ -13,7 +13,9 @@
     ],
     "prettier": "@baltpeter/prettier-config",
     "dependencies": {
+        "cookie-es": "^1.2.2",
         "preact": "^10.24.3",
+        "qs-esm": "^7.0.2",
         "trackhar": "^1.0.0",
         "wouter-preact": "^3.3.5"
     },

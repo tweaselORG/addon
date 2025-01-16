@@ -1,9 +1,11 @@
 import { useState } from 'preact/hooks';
-import { sendBackgroundMessage, type ExtensionMessage } from '../../util/message';
-import { MarkupText, t, Text } from '../util/i18n';
+import { useLocation } from 'wouter-preact';
+import { sendBackgroundMessage } from '../../util/message';
+import { MarkupText, Text, t } from '../util/i18n';
 
 export const Home = () => {
-    const [siteUrl, setSiteUrl] = useState<string>();
+    const [siteUrl, setSiteUrl] = useState<string>('https://example.org');
+    const [, navigate] = useLocation();
 
     if (browser.contextualIdentities === undefined)
         return (
@@ -15,12 +17,13 @@ export const Home = () => {
     return (
         <>
             <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                     e.preventDefault();
-                    if(siteUrl) sendBackgroundMessage({
-                        type: 'startAnalysis',
-                        siteUrl,
-                    });
+
+                    if (siteUrl) {
+                        const { reference } = await sendBackgroundMessage({ type: 'startAnalysis', siteUrl });
+                        navigate(`/analysis/${reference}`);
+                    }
                 }}>
                 <label>
                     <Text id="home.siteUrl" />
