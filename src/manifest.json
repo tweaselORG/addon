@@ -15,7 +15,8 @@
     "permissions": ["webRequest", "storage", "unlimitedStorage", "contextualIdentities", "cookies", "tabs", "tabHide"],
     "host_permissions": ["<all_urls>"],
     "background": {
-        "scripts": ["background.ts"]
+        "scripts": ["background.ts"],
+        "persistent": false
     },
     "action": {
         "default_title": "Tweasel"
