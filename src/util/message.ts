@@ -1,3 +1,5 @@
+import { type Har } from 'har-format';
+
 export type ExtensionMessageType = 'startAnalysis' | 'analysisEvent';
 
 export type ExtensionMessageParams = {
@@ -10,7 +12,10 @@ export type ExtensionMessageParams = {
         type: 'analysisEvent';
         reference: string;
 
-        event: never;
+        event: {
+            type: 'no-interaction-completed' | 'interaction-completed';
+            har: Har;
+        };
     };
 };
 export type ExtensionMessageReturnValues = {
