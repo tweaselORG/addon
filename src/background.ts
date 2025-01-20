@@ -1,7 +1,8 @@
 import { parse as parseCookieHeader, parseSetCookie as parseSetCookieHeader } from 'cookie-es';
 import type { Entry, Har } from 'har-format';
 import * as qs from 'qs-esm';
-import { ExtensionMessageParams, sendBackgroundMessage } from './util/message';
+import { AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
+import { addBackgroundMessageListener, sendBackgroundMessage } from './util/message';
 import { generateReference, httpHeadersToHarHeaders, pause } from './util/util';
 
 browser.runtime.onInstalled.addListener(async () => {
@@ -228,20 +229,20 @@ const analyzeWebsite = async (options: { url: string; reference: string }) => {
 
     await browser.tabs.update(tab.id, { url: options.url });
 
-    const noInteractionHar = await recordHar({ tabId: tab.id, timeoutMs: 15000 });
-    await sendBackgroundMessage({
-        type: 'analysisEvent',
+    const noInteractionHar = await recordHar({ tabId: tab.id, timeoutMs: 30000 });
+    const { result: noInteractionTrackHarResult } = await trackHarProcess(noInteractionHar);
+    await sendBackgroundMessage('analysisEvent', {
         reference: options.reference,
-        event: { type: 'no-interaction-completed', har: noInteractionHar },
+        event: { type: 'no-interaction-completed', har: noInteractionHar, trackHarResult: noInteractionTrackHarResult },
     });
 
     await browser.tabs.show(tab.id);
 
-    const interactionHar = await recordHar({ tabId: tab.id, timeoutMs: 15000 });
-    await sendBackgroundMessage({
-        type: 'analysisEvent',
+    const interactionHar = await recordHar({ tabId: tab.id, timeoutMs: 30000 });
+    const { result: interactionTrackHarResult } = await trackHarProcess(interactionHar);
+    await sendBackgroundMessage('analysisEvent', {
         reference: options.reference,
-        event: { type: 'interaction-completed', har: interactionHar },
+        event: { type: 'interaction-completed', har: interactionHar, trackHarResult: interactionTrackHarResult },
     });
 
     await browser.tabs.remove(tab.id);
@@ -249,16 +250,78 @@ const analyzeWebsite = async (options: { url: string; reference: string }) => {
     await browser.contextualIdentities.remove(container.cookieStoreId);
 };
 
-browser.runtime.onMessage.addListener((message: ExtensionMessageParams[keyof ExtensionMessageParams], sender) => {
-    // We do not accept external messages here.
-    if (sender.id !== browser.runtime.id) return false;
+const ensureTrackHarIframe = () => {
+    const existingIframe = document.getElementById('trackhar-sandbox') as HTMLIFrameElement;
+    if (existingIframe) {
+        // This is not ideal. It could be that we fire two requests in short succession with the second one happening
+        // just after the iframe has been created but before it has loaded. However, after having spent a ridiculous
+        // amount of time on this (considering how simple it should be), I'm not sure whether properly checking is even
+        // possible.
+        // We cannot observe the `load` event again because it will not fire if the iframe is already loaded. We cannot
+        // use `document.readyState` either because we are not allowed to access the `document` of a cross-origin iframe
+        // (which we deliberately want this one to be for sandboxing).
+        // And keeping the state ourselves after observing the `load` event once doesn't really work either since the
+        // background page could have been reloaded/crashed without us noticing. Besides, with MV3, we cannot rely on
+        // global variables to keep state and would have to commit this data __to disk__, which is just utterly
+        // ridiculous.
+        const iframeReady = Promise.resolve();
 
+        return [existingIframe, iframeReady] as const;
+    }
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'trackhar-sandbox';
+    iframe.allowFullscreen = false;
+    iframe.loading = 'eager';
+    iframe.sandbox.add('allow-scripts');
+    iframe.src = browser.runtime.getURL('trackhar-sandbox.html');
+    iframe.style.display = 'none';
+
+    document.body.appendChild(iframe);
+
+    const iframeReady = new Promise<void>((res) => (iframe.onload = () => res()));
+
+    return [iframe, iframeReady] as const;
+};
+
+const trackHarProcess = (har: Har) => {
+    const [iframe, iframeReady] = ensureTrackHarIframe();
+
+    return iframeReady.then(
+        () =>
+            new Promise<{ result: (AnnotatedTrackHarResult | undefined)[] }>((res, rej) => {
+                const id = Math.random().toString(36);
+
+                const listener = (event: MessageEvent) => {
+                    if (event.origin !== 'null') return;
+
+                    try {
+                        const response = JSON.parse(event.data);
+                        if (response.id !== id) return;
+
+                        window.removeEventListener('message', listener);
+                        res({ result: response.result });
+                    } catch {
+                        rej();
+                    }
+                };
+                window.addEventListener('message', listener, false);
+
+                const request = { id, har };
+                iframe.contentWindow?.postMessage(JSON.stringify(request), '*');
+            }),
+    );
+};
+
+addBackgroundMessageListener((message) => {
     if (message.type === 'startAnalysis') {
         const reference = generateReference(new Date());
 
         analyzeWebsite({ url: message.siteUrl, reference });
 
         return Promise.resolve({ reference });
+    } else if (message.type === 'trackHarProcess') {
+        return trackHarProcess(message.har);
     }
 
     return false;

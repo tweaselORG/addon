@@ -47,7 +47,8 @@
         "default": {
             "source": [
                 "src/manifest.json",
-                "src/ui.html"
+                "src/ui.html",
+                "src/trackhar-sandbox.html"
             ],
             "distDir": "./dist",
             "sourceMap": false,

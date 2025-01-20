@@ -1,6 +1,6 @@
 import { Har } from 'har-format';
 import { useEffect, useState } from 'preact/hooks';
-import { type ExtensionMessageParams } from '../../util/message';
+import { addBackgroundMessageListener } from '../../util/message';
 
 export type AnalysisPageProps = {
     reference: string;
@@ -11,25 +11,25 @@ export const Analysis = (props: AnalysisPageProps) => {
     const [interactionHar, setInteractionHar] = useState<Har>();
 
     useEffect(() => {
-        browser.runtime.onMessage.addListener(
-            (message: ExtensionMessageParams[keyof ExtensionMessageParams], sender) => {
-                if (sender.id !== browser.runtime.id) return false;
-
+        const cleanup = addBackgroundMessageListener((message) => {
+            {
                 if (message.type === 'analysisEvent' && message.reference === props.reference) {
                     if (message.event.type === 'no-interaction-completed') {
-                        setNoInteractionHar(message.event.har);
+                        setNoInteractionHar(message.event.trackHarResult);
 
                         return Promise.resolve();
                     } else if (message.event.type === 'interaction-completed') {
-                        setInteractionHar(message.event.har);
+                        setInteractionHar(message.event.trackHarResult);
 
                         return Promise.resolve();
                     }
                 }
 
                 return false;
-            },
-        );
+            }
+        });
+
+        return cleanup;
     });
 
     return (

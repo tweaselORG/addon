@@ -21,7 +21,7 @@ export const Home = () => {
                     e.preventDefault();
 
                     if (siteUrl) {
-                        const { reference } = await sendBackgroundMessage({ type: 'startAnalysis', siteUrl });
+                        const { reference } = await sendBackgroundMessage('startAnalysis', { siteUrl });
                         navigate(`/analysis/${reference}`);
                     }
                 }}>
