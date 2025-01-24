@@ -1,11 +1,14 @@
 import { type Har } from 'har-format';
 import { type AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
 
-export type ExtensionMessageType = 'startAnalysis' | 'analysisEvent' | 'trackHarProcess';
+export type ExtensionMessageType = keyof ExtensionMessageParams;
 
 export type ExtensionMessageParams = {
     startAnalysis: {
         siteUrl: string;
+    };
+    endInteractionAnalysis: {
+        reference: string;
     };
     trackHarProcess: {
         har: Har;
@@ -25,6 +28,7 @@ export type ExtensionMessageReturnValues = {
     startAnalysis: {
         reference: string;
     };
+    endInteractionAnalysis: never;
     trackHarProcess: {
         result: (AnnotatedTrackHarResult | undefined)[];
     };
@@ -57,4 +61,18 @@ export const addBackgroundMessageListener = (
     browser.runtime.onMessage.addListener(listenerWrapper);
 
     return () => browser.runtime.onMessage.removeListener(listenerWrapper);
+};
+
+export const awaitBackgroundMessage = (condition: (message: ExtensionMessage) => boolean | Promise<boolean>) => {
+    return new Promise<ExtensionMessage>((resolve) => {
+        const cleanup = addBackgroundMessageListener(async (message: ExtensionMessage) => {
+            if (await condition(message)) {
+                resolve(message);
+                cleanup();
+                return true;
+            }
+
+            return false;
+        });
+    });
 };

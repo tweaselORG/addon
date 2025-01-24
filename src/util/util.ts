@@ -1,4 +1,4 @@
-import { type Header } from 'har-format';
+import { Har, type Header } from 'har-format';
 
 export const generateReference = (date: Date) =>
     date.getFullYear() + '-' + Math.random().toString(36).substring(2, 9).toUpperCase();
@@ -15,3 +15,14 @@ export const httpHeadersToHarHeaders = (headers: browser.webRequest.HttpHeaders)
             value,
         })),
     );
+
+export const stubHar: Har = {
+    log: {
+        version: '1.2',
+        creator: {
+            name: 'stub',
+            version: 'stub',
+        },
+        entries: [],
+    },
+};

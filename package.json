@@ -2,6 +2,7 @@
     "private": true,
     "scripts": {
         "build": "rm -rf dist/*; parcel build",
+        "postinstall": "patch-package",
         "watch": "parcel watch --no-hmr",
         "load-web-ext": "yarn web-ext run --source-dir ./dist --devtools",
         "dev": "test -d dist || yarn build; npm-run-all --parallel watch \"load-web-ext -- {@}\" --",
@@ -16,6 +17,7 @@
         "cookie-es": "^1.2.2",
         "preact": "^10.24.3",
         "qs-esm": "^7.0.2",
+        "reporthar": "^0.1.1",
         "trackhar": "^1.0.0",
         "wouter-preact": "^3.3.5"
     },
@@ -29,6 +31,8 @@
         "@types/har-format": "^1.2.16",
         "npm-run-all": "^4.1.5",
         "parcel": "^2.10.3",
+        "patch-package": "^8.0.0",
+        "postinstall-postinstall": "^2.1.0",
         "prettier": "^3.3.3",
         "typescript": "5.1.6",
         "web-ext": "^7.9.0"

@@ -2,20 +2,19 @@ import { parse as parseCookieHeader, parseSetCookie as parseSetCookieHeader } fr
 import type { Entry, Har } from 'har-format';
 import * as qs from 'qs-esm';
 import { AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
-import { addBackgroundMessageListener, sendBackgroundMessage } from './util/message';
+import { addBackgroundMessageListener, awaitBackgroundMessage, sendBackgroundMessage } from './util/message';
+import { ProceedingMeta } from './util/types';
 import { generateReference, httpHeadersToHarHeaders, pause } from './util/util';
 
 browser.runtime.onInstalled.addListener(async () => {
     console.log('Installed!');
 });
 
-browser.action.onClicked.addListener(() => browser.tabs.create({ url: '/ui.html' }));
-
 type RequestId = string;
 
 type RecordHarOptions = {
     tabId: number;
-    timeoutMs: number;
+    timeout: number | Promise<unknown>;
 };
 const recordHar = async (options: RecordHarOptions) => {
     const onBeforeRequestEvents: Record<RequestId, browser.webRequest._OnBeforeRequestDetails> = {};
@@ -201,7 +200,7 @@ const recordHar = async (options: RecordHarOptions) => {
         'responseHeaders',
     ]);
 
-    await pause(options.timeoutMs);
+    await (typeof options.timeout === 'number' ? pause(options.timeout) : options.timeout);
 
     browser.webRequest.onBeforeRequest.removeListener(onBeforeRequestListener);
     browser.webRequest.onSendHeaders.removeListener(onSendHeadersListener);
@@ -212,9 +211,9 @@ const recordHar = async (options: RecordHarOptions) => {
     return har;
 };
 
-const analyzeWebsite = async (options: { url: string; reference: string }) => {
+const analyzeWebsite = async (proceedingMeta: ProceedingMeta) => {
     const container = await browser.contextualIdentities.create({
-        name: `tweasel-temp-${options.reference}`,
+        name: `tweasel-temp-${proceedingMeta.reference}`,
         color: 'toolbar',
         icon: 'circle',
     });
@@ -227,21 +226,34 @@ const analyzeWebsite = async (options: { url: string; reference: string }) => {
     if (!tab.id) throw new Error('Could not create tab.');
     await browser.tabs.hide(tab.id);
 
-    await browser.tabs.update(tab.id, { url: options.url });
+    await browser.tabs.update(tab.id, { url: proceedingMeta.siteUrl });
 
-    const noInteractionHar = await recordHar({ tabId: tab.id, timeoutMs: 30000 });
+    const noInteractionHar = await recordHar({ tabId: tab.id, timeout: 30000 });
     const { result: noInteractionTrackHarResult } = await trackHarProcess(noInteractionHar);
+    const noInteractionResult = { har: noInteractionHar, trackHarResult: noInteractionTrackHarResult };
+    await browser.storage.local.set({
+        ['proceeding-meta-' + proceedingMeta.reference]: { ...proceedingMeta, noInteractionResult },
+    });
     await sendBackgroundMessage('analysisEvent', {
-        reference: options.reference,
+        reference: proceedingMeta.reference,
         event: { type: 'no-interaction-completed', har: noInteractionHar, trackHarResult: noInteractionTrackHarResult },
     });
 
     await browser.tabs.show(tab.id);
 
-    const interactionHar = await recordHar({ tabId: tab.id, timeoutMs: 30000 });
+    const interactionHar = await recordHar({
+        tabId: tab.id,
+        timeout: awaitBackgroundMessage(
+            (m) => m.type === 'endInteractionAnalysis' && m.reference === proceedingMeta.reference,
+        ),
+    });
     const { result: interactionTrackHarResult } = await trackHarProcess(interactionHar);
+    const interactionResult = { har: interactionHar, trackHarResult: interactionTrackHarResult };
+    await browser.storage.local.set({
+        ['proceeding-meta-' + proceedingMeta.reference]: { ...proceedingMeta, noInteractionResult, interactionResult },
+    });
     await sendBackgroundMessage('analysisEvent', {
-        reference: options.reference,
+        reference: proceedingMeta.reference,
         event: { type: 'interaction-completed', har: interactionHar, trackHarResult: interactionTrackHarResult },
     });
 
@@ -315,11 +327,19 @@ const trackHarProcess = (har: Har) => {
 
 addBackgroundMessageListener((message) => {
     if (message.type === 'startAnalysis') {
-        const reference = generateReference(new Date());
+        const now = new Date();
+        const reference = generateReference(now);
 
-        analyzeWebsite({ url: message.siteUrl, reference });
+        const proceedingMeta: ProceedingMeta = {
+            reference,
+            siteUrl: message.siteUrl,
+            startedAt: now.toISOString(),
+        };
 
-        return Promise.resolve({ reference });
+        analyzeWebsite(proceedingMeta);
+        return browser.storage.local
+            .set({ ['proceeding-meta-' + reference]: proceedingMeta })
+            .then(() => ({ reference }));
     } else if (message.type === 'trackHarProcess') {
         return trackHarProcess(message.har);
     }
@@ -333,6 +353,6 @@ browser.action.onClicked.addListener(() => {
     browser.permissions.request({ origins: ['<all_urls>'] }).then(async (success) => {
         if (!success) throw new Error('Missing permissions');
 
-        browser.tabs.reload();
+        browser.tabs.create({ url: '/ui.html' });
     });
 });

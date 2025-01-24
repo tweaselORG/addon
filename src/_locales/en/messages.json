@@ -9,6 +9,10 @@
         "message": "Tweasel by Datenanfragen.de e. V."
     },
 
+    "common.loading": {
+        "message": "Loading, please wait…"
+    },
+
     "home.siteUrl": {
         "message": "Website URL:"
     },
@@ -17,5 +21,62 @@
     },
     "home.missing-containers": {
         "message": "This extension requires the <a href=\"https://wiki.mozilla.org/Security/Contextual_Identity_Project/Containers\">Containers feature of Firefox</a> to be activiated to isolate the webpages context. Please set <code>privacy.userContext.enabled</code> in your <code>about:config</code> to <code>true</code>."
+    },
+
+    "analysis.title": {
+        "message": "Analysis of $SITE$",
+        "placeholders": {
+            "site": {
+                "content": "$1",
+                "example": "https://example.org"
+            }
+        }
+    },
+    "analysis.first-step": {
+        "message": "We are currently analyzing the website and recording its network traffic in the background for 30 seconds. In this first step, we are analyzing the website’s behaviour without any user interaction to make sure that no consent has been given. To do this, we have created a hidden tab (which your browser may alert you about). In the next step, you’ll be able to browse and interact with the website. Please wait until then…"
+    },
+    "analysis.second-step": {
+        "message": "The no-interaction analysis has now concluded and we have unhidden the tab. You should now browse the site a bit and interact with its various functions. If the site asks you for your consent, make sure to either not interact with the prompt or actively refuse. Come back here when you’re done to proceed to the next step."
+    },
+    "analysis.finished-interacting": {
+        "message": "I have finished interacting"
+    },
+    "analysis.consent-question": {
+        "message": "When you just interacted with the website, did it ask for your consent for data protection purposes at any point? And if so, what did you do?"
+    },
+    "analysis.consent-question-given": {
+        "message": "The site asked for consent and I accepted."
+    },
+    "analysis.consent-question-ignored": {
+        "message": "The site asked for consent but I ignored the prompt."
+    },
+    "analysis.consent-question-refused": {
+        "message": "The site asked for consent and I refused."
+    },
+    "analysis.consent-question-not-sure": {
+        "message": "I’m not sure"
+    },
+
+    "trackhar-result.tracker-intro": {
+        "message": "The app has sent $N$ request(s) to the tracker “$TRACKERNAME$”, transmitting at least the following information.",
+        "placeholders": {
+            "n": {
+                "content": "$1",
+                "example": "3"
+            },
+            "trackername": {
+                "content": "$2",
+                "example": "Google Analytics"
+            }
+        }
+    },
+    "trackhar-result.more-information": {
+        "message": "More information"
+    },
+    "trackhar-result.data-type": {
+        "message": "Data type"
+    },
+    "trackhar-result.transmitted-values": {
+        "message": "Transmitted value(s)"
     }
 }

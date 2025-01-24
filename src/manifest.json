@@ -12,11 +12,10 @@
             "strict_min_version": "119.0"
         }
     },
-    "permissions": ["webRequest", "contextualIdentities", "cookies", "tabs", "tabHide"],
+    "permissions": ["webRequest", "contextualIdentities", "cookies", "tabs", "tabHide", "storage"],
     "host_permissions": ["<all_urls>"],
     "background": {
-        "scripts": ["background.ts"],
-        "persistent": false
+        "scripts": ["background.ts"]
     },
     "action": {
         "default_title": "Tweasel"
