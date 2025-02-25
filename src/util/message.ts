@@ -1,12 +1,19 @@
 import { type Har } from 'har-format';
 import { type AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
+import { type AnalysisType } from './types';
 
 export type ExtensionMessageType = keyof ExtensionMessageParams;
 
 export type ExtensionMessageParams = {
-    startAnalysis: {
-        siteUrl: string;
-    };
+    startAnalysis:
+        | {
+              siteUrl: string;
+              analysisType: 'initial';
+          }
+        | {
+              reference: string;
+              analysisType: 'second';
+          };
     endInteractionAnalysis: {
         reference: string;
     };
@@ -18,6 +25,7 @@ export type ExtensionMessageParams = {
         reference: string;
 
         event: {
+            analysisType: AnalysisType;
             type: 'no-interaction-completed' | 'interaction-completed';
             har: Har;
             trackHarResult: (AnnotatedTrackHarResult | undefined)[];

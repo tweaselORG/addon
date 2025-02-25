@@ -7,6 +7,7 @@ import { Text } from '../util/i18n';
 
 export type TransmittedDataProps = {
     trackHarResult: (AnnotatedTrackHarResult | undefined)[];
+    headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
 };
 
 const trackHarTranslations = {
@@ -29,15 +30,24 @@ export const TransmittedData = (props: TransmittedDataProps) => {
         [],
     );
 
+    if (Object.keys(findings).length === 0)
+        return (
+            <p>
+                <em>
+                    <Text id="trackhar-result.no-transmissions-detected" />
+                </em>
+            </p>
+        );
+
+    const Heading = `h${props.headingLevel || 2}` as 'h2';
+
     return Object.entries(findings).map(([adapterSlug, adapterResult]) => (
         <>
-            <h2>{adapterResult.adapter.name}</h2>
-
+            <Heading>{adapterResult.adapter.name}</Heading>
             <Text
                 id="trackhar-result.tracker-intro"
                 substitutions={[adapterResult.requests.length + '', adapterResult.adapter.name]}
-            />
-
+            />{' '}
             <a href={`https://trackers.tweasel.org/t/${adapterSlug}`}>
                 <Text id="trackhar-result.more-information" />
             </a>
@@ -63,6 +73,14 @@ export const TransmittedData = (props: TransmittedDataProps) => {
                     ))}
                 </tbody>
             </table>
+            <style>
+                {`
+                table.fancy-table td:nth-child(1),
+                table.fancy-table th:nth-child(1) {
+                    width: 30%;
+                }
+                `}
+            </style>
         </>
     ));
 };

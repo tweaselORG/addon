@@ -1,7 +1,14 @@
 import { Har, type Header } from 'har-format';
+import { type AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
 
 export const generateReference = (date: Date) =>
     date.getFullYear() + '-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+
+export const formatDate = (date: Date, options?: { language?: Intl.LocalesArgument; includeTime?: boolean }) =>
+    date.toLocaleString(options?.language, {
+        dateStyle: 'long',
+        timeStyle: options?.includeTime === true ? 'long' : undefined,
+    });
 
 export const pause = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -26,3 +33,5 @@ export const stubHar: Har = {
         entries: [],
     },
 };
+
+export const trackHarResultIsEmpty = (result: (AnnotatedTrackHarResult | undefined)[]) => result.every((r) => !r);

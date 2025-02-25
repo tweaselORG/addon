@@ -2,8 +2,9 @@ import { parse as parseCookieHeader, parseSetCookie as parseSetCookieHeader } fr
 import type { Entry, Har } from 'har-format';
 import * as qs from 'qs-esm';
 import { AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
-import { addBackgroundMessageListener, awaitBackgroundMessage, sendBackgroundMessage } from './util/message';
-import { ProceedingMeta } from './util/types';
+import { addBackgroundMessageListener, sendBackgroundMessage } from './util/message';
+import { createProceeding, getProceeding, updateProceeding } from './util/proceedings';
+import type { AnalysisType, ProceedingMeta, ProceedingMetaBase } from './util/types';
 import { generateReference, httpHeadersToHarHeaders, pause } from './util/util';
 
 browser.runtime.onInstalled.addListener(async () => {
@@ -211,7 +212,7 @@ const recordHar = async (options: RecordHarOptions) => {
     return har;
 };
 
-const analyzeWebsite = async (proceedingMeta: ProceedingMeta) => {
+const analyzeWebsite = async (proceedingMeta: ProceedingMetaBase, analysisType: AnalysisType) => {
     const container = await browser.contextualIdentities.create({
         name: `tweasel-temp-${proceedingMeta.reference}`,
         color: 'toolbar',
@@ -231,33 +232,61 @@ const analyzeWebsite = async (proceedingMeta: ProceedingMeta) => {
     const noInteractionHar = await recordHar({ tabId: tab.id, timeout: 30000 });
     const { result: noInteractionTrackHarResult } = await trackHarProcess(noInteractionHar);
     const noInteractionResult = { har: noInteractionHar, trackHarResult: noInteractionTrackHarResult };
-    await browser.storage.local.set({
-        ['proceeding-meta-' + proceedingMeta.reference]: { ...proceedingMeta, noInteractionResult },
-    });
+    await updateProceeding(proceedingMeta.reference, { [analysisType + 'NoInteractionResult']: noInteractionResult });
     await sendBackgroundMessage('analysisEvent', {
         reference: proceedingMeta.reference,
-        event: { type: 'no-interaction-completed', har: noInteractionHar, trackHarResult: noInteractionTrackHarResult },
+        event: {
+            analysisType,
+            type: 'no-interaction-completed',
+            har: noInteractionHar,
+            trackHarResult: noInteractionTrackHarResult,
+        },
     });
 
     await browser.tabs.show(tab.id);
 
+    const interactionTimeout = new Promise<void>((resolve) => {
+        const finish = () => {
+            resolve();
+            backgroundMessageCleanup();
+            browser.tabs.onRemoved.removeListener(tabListener);
+        };
+
+        const tabListener = (tabId: number) => {
+            if (tabId === tab.id) finish();
+        };
+        browser.tabs.onRemoved.addListener(tabListener);
+
+        const backgroundMessageCleanup = addBackgroundMessageListener(async (m) => {
+            if (m.type === 'endInteractionAnalysis' && m.reference === proceedingMeta.reference) {
+                finish();
+                return true;
+            }
+
+            return false;
+        });
+    });
     const interactionHar = await recordHar({
         tabId: tab.id,
-        timeout: awaitBackgroundMessage(
-            (m) => m.type === 'endInteractionAnalysis' && m.reference === proceedingMeta.reference,
-        ),
+        timeout: interactionTimeout,
     });
     const { result: interactionTrackHarResult } = await trackHarProcess(interactionHar);
     const interactionResult = { har: interactionHar, trackHarResult: interactionTrackHarResult };
-    await browser.storage.local.set({
-        ['proceeding-meta-' + proceedingMeta.reference]: { ...proceedingMeta, noInteractionResult, interactionResult },
-    });
+    await updateProceeding(proceedingMeta.reference, { [analysisType + 'InteractionResult']: interactionResult });
     await sendBackgroundMessage('analysisEvent', {
         reference: proceedingMeta.reference,
-        event: { type: 'interaction-completed', har: interactionHar, trackHarResult: interactionTrackHarResult },
+        event: {
+            analysisType,
+            type: 'interaction-completed',
+            har: interactionHar,
+            trackHarResult: interactionTrackHarResult,
+        },
     });
 
-    await browser.tabs.remove(tab.id);
+    await browser.tabs
+        .remove(tab.id)
+        // The user may have already closed the tab themselves, that's fine.
+        .catch(() => 1);
 
     await browser.contextualIdentities.remove(container.cookieStoreId);
 };
@@ -327,6 +356,11 @@ const trackHarProcess = (har: Har) => {
 
 addBackgroundMessageListener((message) => {
     if (message.type === 'startAnalysis') {
+        if (message.analysisType === 'second') {
+            getProceeding(message.reference).then((proceedingMeta) => analyzeWebsite(proceedingMeta, 'second'));
+            return Promise.resolve({ reference: message.reference });
+        }
+
         const now = new Date();
         const reference = generateReference(now);
 
@@ -336,10 +370,8 @@ addBackgroundMessageListener((message) => {
             startedAt: now.toISOString(),
         };
 
-        analyzeWebsite(proceedingMeta);
-        return browser.storage.local
-            .set({ ['proceeding-meta-' + reference]: proceedingMeta })
-            .then(() => ({ reference }));
+        analyzeWebsite(proceedingMeta, 'initial');
+        return createProceeding(proceedingMeta).then(() => ({ reference }));
     } else if (message.type === 'trackHarProcess') {
         return trackHarProcess(message.har);
     }
