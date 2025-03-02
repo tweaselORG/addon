@@ -1,7 +1,9 @@
 import { parse as parseCookieHeader, parseSetCookie as parseSetCookieHeader } from 'cookie-es';
 import type { Entry, Har } from 'har-format';
 import * as qs from 'qs-esm';
-import { AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
+import type { GenerateOptions as ReportHarGenerateOptions, TweaselHar } from 'reporthar';
+import type { AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
+import { version as trackHarVersion } from 'trackhar/package.json';
 import { addBackgroundMessageListener, sendBackgroundMessage } from './util/message';
 import { createProceeding, getProceeding, updateProceeding } from './util/proceedings';
 import type { AnalysisType, ProceedingMeta, ProceedingMetaBase } from './util/types';
@@ -14,6 +16,9 @@ browser.runtime.onInstalled.addListener(async () => {
 type RequestId = string;
 
 type RecordHarOptions = {
+    /** Either an ISO 8601 string of when the site was loaded (if it was already loaded) or a function to load the site. */
+    loadSite: string | (() => Promise<unknown>);
+    siteUrl: string;
     tabId: number;
     timeout: number | Promise<unknown>;
 };
@@ -25,22 +30,57 @@ const recordHar = async (options: RecordHarOptions) => {
 
     const manifest = browser.runtime.getManifest();
     const browserInfo = await browser.runtime.getBrowserInfo();
+    const platformInfo = await browser.runtime.getPlatformInfo();
 
-    const har: Har = {
+    const har: TweaselHar = {
         log: {
             version: '1.2',
             creator: {
-                name: manifest.name,
+                name: 'Tweasel browser addon',
                 version: manifest.version,
             },
             browser: {
                 name: `${browserInfo.vendor} ${browserInfo.name}`,
                 version: `${browserInfo.version} (${browserInfo.buildID})`,
             },
-            pages: [],
+            _tweasel: {
+                device: {
+                    platform: platformInfo.os as 'android',
+                    runTarget: 'device',
+                    osVersion: '<unknown>',
+                    architectures: platformInfo.arch,
+                },
+                startDate: new Date().toISOString(),
+                endDate: '',
+                metaVersion: '2.0-alpha0' as '2.0',
+                versions: {
+                    'tweasel-addon': manifest.version,
+                    trackhar: trackHarVersion,
+                },
+                periodWithoutInteraction: typeof options.timeout === 'number' ? options.timeout : -1,
+            },
+            pages: [
+                {
+                    id: 'analyzedPage',
+                    pageTimings: {},
+                    startedDateTime: '',
+                    title: options.siteUrl,
+                    _URL: options.siteUrl,
+                },
+            ],
             entries: [],
         },
     };
+
+    if (typeof options.loadSite === 'function') {
+        await options.loadSite();
+        har.log.pages![0]!.startedDateTime = new Date().toISOString();
+    } else {
+        har.log.pages![0]!.startedDateTime = options.loadSite;
+
+        const title = await browser.tabs.get(options.tabId).then((tab) => tab.title);
+        if (title) har.log.pages![0]!.title = title;
+    }
 
     const onBeforeRequestListener: (details: browser.webRequest._OnBeforeRequestDetails) => void = (details) => {
         onBeforeRequestEvents[details.requestId] = details;
@@ -193,6 +233,7 @@ const recordHar = async (options: RecordHarOptions) => {
             },
             time: send + wait + receive,
             serverIPAddress: onCompletedDetails.ip,
+            pageref: 'analyzedPage',
         };
 
         har.log.entries.push(entry);
@@ -208,6 +249,13 @@ const recordHar = async (options: RecordHarOptions) => {
     browser.webRequest.onBeforeRedirect.removeListener(onBeforeRedirectListener);
     browser.webRequest.onResponseStarted.removeListener(onResponseStartedListener);
     browser.webRequest.onCompleted.removeListener(onCompletedListener);
+
+    har.log._tweasel.endDate = new Date().toISOString();
+
+    if (typeof options.loadSite === 'function') {
+        const title = await browser.tabs.get(options.tabId).then((tab) => tab.title);
+        if (title) har.log.pages![0]!.title = title;
+    }
 
     return har;
 };
@@ -227,9 +275,12 @@ const analyzeWebsite = async (proceedingMeta: ProceedingMetaBase, analysisType: 
     if (!tab.id) throw new Error('Could not create tab.');
     await browser.tabs.hide(tab.id);
 
-    await browser.tabs.update(tab.id, { url: proceedingMeta.siteUrl });
-
-    const noInteractionHar = await recordHar({ tabId: tab.id, timeout: 30000 });
+    const noInteractionHar = await recordHar({
+        tabId: tab.id,
+        timeout: 30000,
+        loadSite: () => browser.tabs.update(tab.id!, { url: proceedingMeta.siteUrl }),
+        siteUrl: proceedingMeta.siteUrl,
+    });
     const { result: noInteractionTrackHarResult } = await trackHarProcess(noInteractionHar);
     const noInteractionResult = { har: noInteractionHar, trackHarResult: noInteractionTrackHarResult };
     await updateProceeding(proceedingMeta.reference, { [analysisType + 'NoInteractionResult']: noInteractionResult });
@@ -269,6 +320,8 @@ const analyzeWebsite = async (proceedingMeta: ProceedingMetaBase, analysisType: 
     const interactionHar = await recordHar({
         tabId: tab.id,
         timeout: interactionTimeout,
+        loadSite: noInteractionHar.log.pages![0]!.startedDateTime,
+        siteUrl: proceedingMeta.siteUrl,
     });
     const { result: interactionTrackHarResult } = await trackHarProcess(interactionHar);
     const interactionResult = { har: interactionHar, trackHarResult: interactionTrackHarResult };
@@ -291,8 +344,8 @@ const analyzeWebsite = async (proceedingMeta: ProceedingMetaBase, analysisType: 
     await browser.contextualIdentities.remove(container.cookieStoreId);
 };
 
-const ensureTrackHarIframe = () => {
-    const existingIframe = document.getElementById('trackhar-sandbox') as HTMLIFrameElement;
+const ensureSandboxIframe = (type: 'trackhar' | 'reporthar') => {
+    const existingIframe = document.getElementById(`${type}-sandbox`) as HTMLIFrameElement;
     if (existingIframe) {
         // This is not ideal. It could be that we fire two requests in short succession with the second one happening
         // just after the iframe has been created but before it has loaded. However, after having spent a ridiculous
@@ -311,11 +364,11 @@ const ensureTrackHarIframe = () => {
     }
 
     const iframe = document.createElement('iframe');
-    iframe.id = 'trackhar-sandbox';
+    iframe.id = `${type}-sandbox`;
     iframe.allowFullscreen = false;
     iframe.loading = 'eager';
     iframe.sandbox.add('allow-scripts');
-    iframe.src = browser.runtime.getURL('trackhar-sandbox.html');
+    iframe.src = browser.runtime.getURL(`${type}-sandbox.html`);
     iframe.style.display = 'none';
 
     document.body.appendChild(iframe);
@@ -324,16 +377,16 @@ const ensureTrackHarIframe = () => {
 
     return [iframe, iframeReady] as const;
 };
-
-const trackHarProcess = (har: Har) => {
-    const [iframe, iframeReady] = ensureTrackHarIframe();
+const sandboxExecute = <ResultT>(type: 'trackhar' | 'reporthar', request: Record<string, unknown>) => {
+    const [iframe, iframeReady] = ensureSandboxIframe(type);
 
     return iframeReady.then(
         () =>
-            new Promise<{ result: (AnnotatedTrackHarResult | undefined)[] }>((res, rej) => {
+            new Promise<{ result: ResultT }>((res, rej) => {
                 const id = Math.random().toString(36);
 
                 const listener = (event: MessageEvent) => {
+                    console.log({ event, data: event.data });
                     if (event.origin !== 'null') return;
 
                     try {
@@ -348,11 +401,20 @@ const trackHarProcess = (har: Har) => {
                 };
                 window.addEventListener('message', listener, false);
 
-                const request = { id, har };
-                iframe.contentWindow?.postMessage(JSON.stringify(request), '*');
+                console.log({ id, ...request });
+                iframe.contentWindow?.postMessage(JSON.stringify({ id, ...request }), '*');
             }),
     );
 };
+
+const trackHarProcess = (har: Har) => sandboxExecute<(AnnotatedTrackHarResult | undefined)[]>('trackhar', { har });
+const reportHarGenerate = (options: ReportHarGenerateOptions) =>
+    sandboxExecute<string>('reporthar', { options }).then((res) => ({
+        // TypeScript doesn't know about `fromBase64()` yet.
+        result: (
+            Uint8Array as Uint8ArrayConstructor & { fromBase64: (str: string) => Uint8Array<ArrayBufferLike> }
+        ).fromBase64(res.result),
+    }));
 
 addBackgroundMessageListener((message) => {
     if (message.type === 'startAnalysis') {
@@ -372,9 +434,8 @@ addBackgroundMessageListener((message) => {
 
         analyzeWebsite(proceedingMeta, 'initial');
         return createProceeding(proceedingMeta).then(() => ({ reference }));
-    } else if (message.type === 'trackHarProcess') {
-        return trackHarProcess(message.har);
-    }
+    } else if (message.type === 'trackHarProcess') return trackHarProcess(message.har);
+    else if (message.type === 'reportHarGenerate') return reportHarGenerate(message.options);
 
     return false;
 });

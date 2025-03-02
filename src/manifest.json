@@ -9,7 +9,8 @@
     "browser_specific_settings": {
         "gecko": {
             "id": "addon-firefox@tweasel.org",
-            "strict_min_version": "119.0"
+            "_strict_min_version_reasoning": "Uint8Array.prototype.toBase64() and Uint8Array.fromBase64() are only available since Firefox 133.",
+            "strict_min_version": "133.0"
         }
     },
     "permissions": ["webRequest", "contextualIdentities", "cookies", "tabs", "tabHide", "storage", "unlimitedStorage"],

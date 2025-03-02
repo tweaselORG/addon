@@ -1,4 +1,4 @@
-import { type Har } from 'har-format';
+import type { TweaselHar } from 'reporthar';
 import { type AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
 import { type RequireAllOrNone } from 'type-fest';
 
@@ -6,7 +6,7 @@ export type AnalysisType = 'initial' | 'second';
 export type AnalysisConsentAnswer = 'not-asked' | 'given' | 'ignored' | 'refused' | 'not-sure';
 
 export type AnalysisStepResult = {
-    har: Har;
+    har: TweaselHar;
     trackHarResult: (AnnotatedTrackHarResult | undefined)[];
 };
 

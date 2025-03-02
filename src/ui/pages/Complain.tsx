@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
+import { generateAdvanced } from 'reporthar';
 import { dpas } from '../../util/dpas';
+import { sendBackgroundMessage } from '../../util/message';
 import { updateProceeding as _updateProceeding, getProceeding } from '../../util/proceedings';
 import { type ProceedingMeta } from '../../util/types';
 import { trackHarResultIsEmpty } from '../../util/util';
@@ -18,10 +20,10 @@ export const Complain = (props: ComplainProps) => {
     const [controllerAddress, setControllerAddress] = useState<string>();
     const [controllerDetailsSourceUrl, setControllerDetailsSourceUrl] = useState<string>();
 
-    const [complainantAddress, setComplainantAddress] = useState<string>();
-    const [complainantContactDetails, setComplainantContactDetails] = useState<string>();
+    const [complainantAddress, setComplainantAddress] = useState<string>('demo');
+    const [complainantContactDetails, setComplainantContactDetails] = useState<string>('demo');
     const [complainantAgreesToUnencryptedCommunication, setComplainantAgreesToUnencryptedCommunication] =
-        useState<boolean>();
+        useState<boolean>(false);
 
     const [complaintDownloaded, setComplaintDownloaded] = useState(false);
 
@@ -178,10 +180,36 @@ export const Complain = (props: ComplainProps) => {
                 </p>
 
                 <form
-                    onSubmit={(e) => {
+                    onSubmit={async (e) => {
                         e.preventDefault();
 
-                        alert('TODO');
+                        const pdf = await generateAdvanced({
+                            type: 'report',
+                            language: 'en',
+                            analysis: {
+                                date: new Date(),
+                                app: {
+                                    id: 'appId',
+                                    name: 'appName',
+                                    version: 'appVersion',
+                                    platform: 'Android',
+                                },
+                                deviceType: 'device',
+                                platform: 'platform',
+                                platformVersion: 'platformVersion',
+                                har: proceedingMeta.secondInteractionResult!.har,
+                                trackHarResult: proceedingMeta.secondInteractionResult!.trackHarResult,
+                                dependencies: {},
+                            },
+                        });
+
+                        const blob = new Blob([pdf], { type: 'application/pdf' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'complaint.pdf';
+                        a.click();
+
                         setComplaintDownloaded(true);
                     }}>
                     <div class="radio-wrapper col66 col100-mobile">

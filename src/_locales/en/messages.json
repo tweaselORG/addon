@@ -162,6 +162,9 @@
         "message": "Contact data protection authority"
     },
 
+    "send-notice.not-yet": {
+        "message": "You cannot send a notice regarding this proceeding yet."
+    },
     "send-notice.title": {
         "message": "Send notice to the operator"
     },

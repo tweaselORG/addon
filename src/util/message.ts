@@ -1,4 +1,5 @@
 import { type Har } from 'har-format';
+import type { GenerateOptions as ReportHarGenerateOptions, TweaselHar } from 'reporthar';
 import { type AnnotatedResult as AnnotatedTrackHarResult } from 'trackhar';
 import { type AnalysisType } from './types';
 
@@ -20,6 +21,9 @@ export type ExtensionMessageParams = {
     trackHarProcess: {
         har: Har;
     };
+    reportHarGenerate: {
+        options: ReportHarGenerateOptions;
+    };
 
     analysisEvent: {
         reference: string;
@@ -27,7 +31,7 @@ export type ExtensionMessageParams = {
         event: {
             analysisType: AnalysisType;
             type: 'no-interaction-completed' | 'interaction-completed';
-            har: Har;
+            har: TweaselHar;
             trackHarResult: (AnnotatedTrackHarResult | undefined)[];
         };
     };
@@ -39,6 +43,9 @@ export type ExtensionMessageReturnValues = {
     endInteractionAnalysis: never;
     trackHarProcess: {
         result: (AnnotatedTrackHarResult | undefined)[];
+    };
+    reportHarGenerate: {
+        result: Uint8Array;
     };
 
     analysisEvent: never;

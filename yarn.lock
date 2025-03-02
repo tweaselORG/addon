@@ -494,7 +494,7 @@
   resolved "https://registry.yarnpkg.com/@msgpackr-extract/msgpackr-extract-win32-x64/-/msgpackr-extract-win32-x64-3.0.3.tgz#0aa5502d547b57abfc4ac492de68e2006e417242"
   integrity sha512-x0fWaQtYp4E6sktbsdAqnehxDgEc/VwM7uLsRCYWaiGu0ykYdZPiS8zCWdnjHwyiumousxfBm4SO31eXqwEZhQ==
 
-"@myriaddreamin/typst-ts-web-compiler@^0.4.1":
+"@myriaddreamin/typst-ts-web-compiler@0.4.1", "@myriaddreamin/typst-ts-web-compiler@^0.4.1":
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/@myriaddreamin/typst-ts-web-compiler/-/typst-ts-web-compiler-0.4.1.tgz#02c0e5cae68d918207a830ea82f6b99d14682dab"
   integrity sha512-k446Y7+JEUaOtHWSwgDt799NFMJJnqw8Rg+H44roT5qI9gLHp31+Up86FpGDKNm21d7sFxqEw2xWwLlclf2tvw==
@@ -5404,6 +5404,11 @@ patch-package@^8.0.0:
     tmp "^0.0.33"
     yaml "^2.2.2"
 
+path-browserify@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/path-browserify/-/path-browserify-1.0.1.tgz#d98454a9c3753d5790860f16f68867b9e46be1fd"
+  integrity sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==
+
 path-exists@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/path-exists/-/path-exists-4.0.0.tgz#513bdbe2d3b95d7762e8c1137efa195c6c61b5b3"
@@ -5910,10 +5915,9 @@ relaxed-json@1.0.3:
     chalk "^2.4.2"
     commander "^2.6.0"
 
-reporthar@^0.2.0:
+"reporthar@https://pkg.pr.new/reporthar@5d19a02":
   version "0.2.0"
-  resolved "https://registry.yarnpkg.com/reporthar/-/reporthar-0.2.0.tgz#ecaba1b225f12938118f7d8961f1b65be945f2f0"
-  integrity sha512-zIl2IYHzZE/z7EwrGBRX9bXjh4MXLBZ3RXlh3jHlFUB90MkLVOZJjZ1Fpmrjl2iTHLkrBFMohzQ8Qf0SCNP3IQ==
+  resolved "https://pkg.pr.new/reporthar@5d19a02#17b068b79d4a322ba0d57674bff4a7733d39ae58"
   dependencies:
     "@myriaddreamin/typst-ts-web-compiler" "^0.4.1"
     "@myriaddreamin/typst.ts" "^0.4.1"
