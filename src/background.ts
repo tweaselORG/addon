@@ -345,7 +345,7 @@ const analyzeWebsite = async (proceedingMeta: ProceedingMetaBase, analysisType: 
     await browser.contextualIdentities.remove(container.cookieStoreId);
 };
 
-const ensureSandboxIframe = (type: 'trackhar' | 'reporthar') => {
+const ensureSandboxIframe = async (type: 'trackhar' | 'reporthar') => {
     const existingIframe = document.getElementById(`${type}-sandbox`) as HTMLIFrameElement;
     if (existingIframe) {
         // This is not ideal. It could be that we fire two requests in short succession with the second one happening
@@ -376,40 +376,74 @@ const ensureSandboxIframe = (type: 'trackhar' | 'reporthar') => {
 
     const iframeReady = new Promise<void>((res) => (iframe.onload = () => res()));
 
-    return [iframe, iframeReady] as const;
+    if (type === 'reporthar') {
+        await iframeReady;
+
+        const wasmUrl = new URL(
+            'npm:@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm',
+            import.meta.url,
+        );
+        const wasm = await fetch(wasmUrl)
+            .then((r) => r.arrayBuffer())
+            .then((b) => Buffer.from(b));
+        iframe.contentWindow?.postMessage(JSON.stringify({ type: 'init', wasm: wasm.toString('base64') }), '*');
+
+        const inited = new Promise<void>((res, rej) => {
+            const listener = (event: MessageEvent) => {
+                if (event.origin !== 'null') return;
+
+                try {
+                    const response = JSON.parse(event.data);
+
+                    if (response.type !== 'wasmInited') return;
+
+                    window.removeEventListener('message', listener);
+                    res();
+                } catch {
+                    rej();
+                }
+            };
+            window.addEventListener('message', listener, false);
+        });
+
+        return [iframe, inited] as const;
+    } else {
+        return [iframe, iframeReady] as const;
+    }
 };
-const sandboxExecute = <ResultT>(type: 'trackhar' | 'reporthar', request: Record<string, unknown>) => {
-    const [iframe, iframeReady] = ensureSandboxIframe(type);
+const sandboxExecute = <ResultT>(type: 'trackhar' | 'reporthar', request: Record<string, unknown>) =>
+    ensureSandboxIframe(type)
+        .then(([iframe, iframeReady]) => iframeReady.then(() => iframe))
+        .then(
+            (iframe) =>
+                new Promise<{ result: ResultT }>((res, rej) => {
+                    const id = Math.random().toString(36);
 
-    return iframeReady.then(
-        () =>
-            new Promise<{ result: ResultT }>((res, rej) => {
-                const id = Math.random().toString(36);
+                    const listener = (event: MessageEvent) => {
+                        if (event.origin !== 'null') return;
 
-                const listener = (event: MessageEvent) => {
-                    if (event.origin !== 'null') return;
+                        try {
+                            const response = JSON.parse(event.data);
 
-                    try {
-                        const response = JSON.parse(event.data);
+                            if (response.error) {
+                                console.error(`An unexpected error occurred in a sandboxed ${type}:`, response);
+                                rej();
+                                return;
+                            }
+                            if (response.id !== id) return;
 
-                        if (response.error) {
-                            console.error(`An unexpected error occurred in a sandboxed ${type}:`, response);
-                            return;
+                            window.removeEventListener('message', listener);
+                            res({ result: response.result });
+                        } catch {
+                            console.error(`Couldn't parse message for sandboxed ${type} request`, { request, event });
+                            rej();
                         }
-                        if (response.id !== id) return;
+                    };
+                    window.addEventListener('message', listener, false);
 
-                        window.removeEventListener('message', listener);
-                        res({ result: response.result });
-                    } catch {
-                        rej();
-                    }
-                };
-                window.addEventListener('message', listener, false);
-
-                iframe.contentWindow?.postMessage(JSON.stringify({ id, ...request }), '*');
-            }),
-    );
-};
+                    iframe.contentWindow?.postMessage(JSON.stringify({ id, ...request }), '*');
+                }),
+        );
 
 const trackHarProcess = (har: Har) => sandboxExecute<(AnnotatedTrackHarResult | undefined)[]>('trackhar', { har });
 const reportHarGenerate = (options: ReportHarGenerateOptions) =>

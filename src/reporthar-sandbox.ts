@@ -1,17 +1,23 @@
 import { setImportWasmModule } from '@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler';
-import fs from 'fs';
 import { generate } from 'reporthar';
 
 if (window.browser || window.opener) throw new Error('This script can only be run in a sandboxed environment!');
 
-const wasm = fs.readFileSync(
-    __dirname + '/../node_modules/@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm',
-);
-setImportWasmModule(() => wasm);
+let wasmInited = false;
 
 window.addEventListener('message', async (event) => {
     try {
         const request = JSON.parse(event.data);
+
+        if (request.type === 'init') {
+            setImportWasmModule(() => Buffer.from(request.wasm, 'base64'));
+            wasmInited = true;
+            event.source?.postMessage(JSON.stringify({ type: 'wasmInited' }), { targetOrigin: event.origin });
+
+            return;
+        }
+
+        if (!wasmInited) throw new Error("The WASM module hasn't been initialized yet.");
 
         // TypeScript doesn't know about `toBase64()` yet.
         const result = (await generate(request.options)) as Uint8Array<ArrayBufferLike> & { toBase64: () => string };

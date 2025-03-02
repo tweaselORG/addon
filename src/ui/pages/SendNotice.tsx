@@ -41,8 +41,8 @@ export const SendNotice = (props: SendNoticeProps) => {
             .then((r) => r.result)
             .then((pdf) => createBlobUrl(pdf, 'application/pdf'))
             .then((url) => setNoticeBlobUrl(url))
-            // TODO: It should of course be possible to do these in parallel, but there is some bug that I'm just not
-            // seeing right now.
+            // TODO: It should of course be possible to do these in parallel. The problem is likely what I already
+            // described in the comment for `if(existingIframe)` in `ensureSandboxIframe`.
             .then(() =>
                 sendBackgroundMessage('reportHarGenerate', {
                     options: {
