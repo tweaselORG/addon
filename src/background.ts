@@ -47,7 +47,8 @@ const recordHar = async (options: RecordHarOptions) => {
                 device: {
                     platform: platformInfo.os as 'android',
                     runTarget: 'device',
-                    osVersion: '<unknown>',
+                    // TODO: I don't think we have a way of determining that.
+                    osVersion: '',
                     architectures: platformInfo.arch,
                 },
                 startDate: new Date().toISOString(),
@@ -386,11 +387,15 @@ const sandboxExecute = <ResultT>(type: 'trackhar' | 'reporthar', request: Record
                 const id = Math.random().toString(36);
 
                 const listener = (event: MessageEvent) => {
-                    console.log({ event, data: event.data });
                     if (event.origin !== 'null') return;
 
                     try {
                         const response = JSON.parse(event.data);
+
+                        if (response.error) {
+                            console.error(`An unexpected error occurred in a sandboxed ${type}:`, response);
+                            return;
+                        }
                         if (response.id !== id) return;
 
                         window.removeEventListener('message', listener);
@@ -401,7 +406,6 @@ const sandboxExecute = <ResultT>(type: 'trackhar' | 'reporthar', request: Record
                 };
                 window.addEventListener('message', listener, false);
 
-                console.log({ id, ...request });
                 iframe.contentWindow?.postMessage(JSON.stringify({ id, ...request }), '*');
             }),
     );

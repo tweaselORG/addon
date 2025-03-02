@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'preact/hooks';
-import { generateAdvanced } from 'reporthar';
+import { navigate } from 'wouter-preact/use-hash-location';
 import { dpas } from '../../util/dpas';
 import { sendBackgroundMessage } from '../../util/message';
 import { updateProceeding as _updateProceeding, getProceeding } from '../../util/proceedings';
 import { type ProceedingMeta } from '../../util/types';
 import { trackHarResultIsEmpty } from '../../util/util';
 import { RadioForm } from '../components/RadioForm';
+import { createBlobUrl, openPdf } from '../util/file';
 import { MarkupText, Text, t } from '../util/i18n';
 
 export type ComplainProps = {
@@ -20,16 +21,55 @@ export const Complain = (props: ComplainProps) => {
     const [controllerAddress, setControllerAddress] = useState<string>();
     const [controllerDetailsSourceUrl, setControllerDetailsSourceUrl] = useState<string>();
 
-    const [complainantAddress, setComplainantAddress] = useState<string>('demo');
-    const [complainantContactDetails, setComplainantContactDetails] = useState<string>('demo');
+    const [complainantAddress, setComplainantAddress] = useState<string>();
+    const [complainantContactDetails, setComplainantContactDetails] = useState<string>();
     const [complainantAgreesToUnencryptedCommunication, setComplainantAgreesToUnencryptedCommunication] =
-        useState<boolean>(false);
+        useState<boolean>();
+
+    const [reportBlobUrl, setReportBlobUrl] = useState<string>();
+    const [harBlobUrl, setHarBlobUrl] = useState<string>();
+    const [harInteractionBlobUrl, setHarInteractionBlobUrl] = useState<string>();
 
     const [complaintDownloaded, setComplaintDownloaded] = useState(false);
 
     useEffect(() => {
         getProceeding(props.reference, { includeResults: true }).then((res) => setProceedingMeta(res));
     }, []);
+
+    useEffect(() => {
+        if (
+            !proceedingMeta ||
+            !proceedingMeta.secondNoInteractionResult ||
+            !proceedingMeta.secondInteractionResult ||
+            !proceedingMeta.complaintAuthority
+        )
+            return;
+
+        sendBackgroundMessage('reportHarGenerate', {
+            options: {
+                type: 'report',
+                analysisSource: 'web',
+                // TODO
+                language: 'en',
+
+                har: proceedingMeta.secondNoInteractionResult!.har,
+                trackHarResult: proceedingMeta.secondNoInteractionResult!.trackHarResult,
+
+                harInteraction: proceedingMeta.secondInteractionResult!.har,
+                trackHarResultInteraction: proceedingMeta.secondInteractionResult!.trackHarResult,
+            },
+        })
+            .then((r) => r.result)
+            .then((pdf) => createBlobUrl(pdf, 'application/pdf'))
+            .then((url) => setReportBlobUrl(url));
+
+        setHarBlobUrl(
+            createBlobUrl(JSON.stringify(proceedingMeta.secondNoInteractionResult?.har), 'application/har+json'),
+        );
+        setHarInteractionBlobUrl(
+            createBlobUrl(JSON.stringify(proceedingMeta.secondInteractionResult?.har), 'application/har+json'),
+        );
+    }, [proceedingMeta]);
 
     const updateProceeding = (update: Partial<ProceedingMeta>) =>
         _updateProceeding(props.reference, update).then(() =>
@@ -168,6 +208,8 @@ export const Complain = (props: ComplainProps) => {
             </>
         );
 
+    if (!reportBlobUrl || !harBlobUrl || !harInteractionBlobUrl) return <Text id="complain.readyToSend-generating" />;
+
     if (!proceedingMeta.complaintSent && dpa)
         return (
             <>
@@ -180,37 +222,60 @@ export const Complain = (props: ComplainProps) => {
                 </p>
 
                 <form
-                    onSubmit={async (e) => {
+                    onSubmit={(e) => {
                         e.preventDefault();
 
-                        const pdf = await generateAdvanced({
-                            type: 'report',
-                            language: 'en',
-                            analysis: {
-                                date: new Date(),
-                                app: {
-                                    id: 'appId',
-                                    name: 'appName',
-                                    version: 'appVersion',
-                                    platform: 'Android',
+                        sendBackgroundMessage('reportHarGenerate', {
+                            options: {
+                                type:
+                                    proceedingMeta.complaintType === 'formal'
+                                        ? 'complaint'
+                                        : ('complaint-informal' as 'complaint'),
+                                analysisSource: 'web',
+                                // TODO
+                                language: 'en',
+
+                                har: proceedingMeta.secondNoInteractionResult!.har,
+                                trackHarResult: proceedingMeta.secondNoInteractionResult!.trackHarResult,
+                                harInteraction: proceedingMeta.secondInteractionResult!.har,
+                                trackHarResultInteraction: proceedingMeta.secondInteractionResult!.trackHarResult,
+                                initialHar: proceedingMeta.initialNoInteractionResult!.har,
+                                initialTrackHarResult: proceedingMeta.initialNoInteractionResult!.trackHarResult,
+                                // TODO: These two are actually not used by ReportHAR.
+                                initialHarInteraction: proceedingMeta.initialInteractionResult!.har,
+                                initialTrackHarResultInteraction:
+                                    proceedingMeta.initialInteractionResult!.trackHarResult,
+
+                                complaintOptions: {
+                                    date: new Date(),
+                                    reference: proceedingMeta.reference,
+                                    noticeDate: proceedingMeta.noticeSent!,
+
+                                    // TODO
+                                    nationalEPrivacyLaw: false,
+
+                                    controllerAddress:
+                                        proceedingMeta.controllerName + ', ' + proceedingMeta.controllerAddress,
+                                    controllerAddressSourceUrl: proceedingMeta.controllerDetailsSourceUrl!,
+                                    controllerResponse:
+                                        proceedingMeta.controllerResponse === 'promise'
+                                            ? 'broken-promise'
+                                            : proceedingMeta.controllerResponse!,
+
+                                    complainantAddress: complainantAddress!,
+                                    complainantContactDetails: complainantContactDetails!,
+                                    complainantAgreesToUnencryptedCommunication:
+                                        complainantAgreesToUnencryptedCommunication!,
+
+                                    interactionNoConsent:
+                                        proceedingMeta.secondInteractionConsent !== 'given' &&
+                                        proceedingMeta.secondInteractionConsent !== 'not-sure',
                                 },
-                                deviceType: 'device',
-                                platform: 'platform',
-                                platformVersion: 'platformVersion',
-                                har: proceedingMeta.secondInteractionResult!.har,
-                                trackHarResult: proceedingMeta.secondInteractionResult!.trackHarResult,
-                                dependencies: {},
                             },
-                        });
-
-                        const blob = new Blob([pdf], { type: 'application/pdf' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'complaint.pdf';
-                        a.click();
-
-                        setComplaintDownloaded(true);
+                        })
+                            .then((r) => r.result)
+                            .then((pdf) => openPdf(pdf))
+                            .then(() => setComplaintDownloaded(true));
                     }}>
                     <div class="radio-wrapper col66 col100-mobile">
                         <div class="form-group">
@@ -354,23 +419,37 @@ export const Complain = (props: ComplainProps) => {
 
                 <ul>
                     <li>
-                        <a href="TODO">
+                        <a href={reportBlobUrl} target="_blank">
                             <Text id="complain.readyToSend-technical-report" />
                         </a>
                     </li>
                     <li>
-                        <a href="TODO">
+                        <a
+                            href={harBlobUrl}
+                            download={`${proceedingMeta.reference}-traffic-recording-no-interaction.har`}>
                             <Text id="complain.readyToSend-traffic-recording" />
                         </a>
                     </li>
                     <li>
-                        <a href="TODO">
-                            <Text id="complain.readyToSend-controller-communication" />
+                        <a
+                            href={harInteractionBlobUrl}
+                            download={`${proceedingMeta.reference}-traffic-recording-interaction.har`}>
+                            <Text id="complain.readyToSend-traffic-recording-interaction" />
                         </a>
+                    </li>
+                    <li>
+                        <Text id="complain.readyToSend-controller-communication" />
                     </li>
                 </ul>
 
-                <button class={`button button-${complaintDownloaded ? 'primary' : 'secondary'}`}>
+                <button
+                    class={`button button-${complaintDownloaded ? 'primary' : 'secondary'}`}
+                    disabled={!complaintDownloaded}
+                    onClick={() =>
+                        updateProceeding({ complaintSent: new Date() }).then(() =>
+                            navigate(`/analysis/${props.reference}`),
+                        )
+                    }>
                     <Text id="complain.readyToSend-complaint-sent" />
                 </button>
             </>

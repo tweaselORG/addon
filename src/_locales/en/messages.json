@@ -161,7 +161,16 @@
     "analysis.contact-dpa": {
         "message": "Contact data protection authority"
     },
+    "analysis.complaint-sent-formal": {
+        "message": "<p>You have told us that you have sent the complaint. Now it’s time to wait for the DPA to process it. According to Art. 78(2) GDPR, the DPA has to inform you on the progress or outcome of the complaint within three months. However, in our experience, it is unfortunately common that it takes them much longer to do so. If after six months or a year you still haven’t received a meaningful response, it makes sense to send them a reminder.</p>"
+    },
+    "analysis.complaint-sent-informal": {
+        "message": "<p>You have told us that you have sent the complaint. Now it’s time to wait for the DPA to process it. As you said that you are not a regular user of the website, you have only sent an informal complaint and the DPA is unfortunately not legally required to inform you about what they do regarding your complaint. You probably shouldn’t expect a meaningful response from them.</p><p>However, our goal is to raise awareness and draw the attention of the DPAs to these violations. It is important that the authorities are attentive to our grievances to facilitate change in the long run. We hope that this whole process can be part of a necessary political shift that prioritises data protection and prohibits the unwanted tracking activities of companies.</p><p>Thank you for taking the time to help us on our mission.</p>"
+    },
 
+    "send-notice.generating": {
+        "message": "Generating documents. This can take a moment. Please wait…"
+    },
     "send-notice.not-yet": {
         "message": "You cannot send a notice regarding this proceeding yet."
     },
@@ -215,7 +224,10 @@
         "message": "Technical report (PDF)"
     },
     "send-notice.traffic-recording": {
-        "message": "Traffic recording (HAR)"
+        "message": "Traffic recording first part (no interaction, HAR)"
+    },
+    "send-notice.traffic-recording-interaction": {
+        "message": "Traffic recording second part (interaction, HAR)"
     },
 
     "evaluate-response.heading": {
@@ -300,6 +312,9 @@
     "complain.askAuthority-explanation": {
         "message": "<p>Please select the data protection authority (DPA) that you want to contact about this matter. You can choose the authority at the your place of habitual residence (i.e. where you live), your place of work, or the place of the alleged infringement (i.e. where the website operator is based).</p><p>You’ll note that the list below is not complete. Unfortunately, we can only support authorities that accept complaints in languages we have templates for.</p>"
     },
+    "complain.readyToSend-generating": {
+        "message": "Generating technical report. This can take a moment. Please wait…"
+    },
     "complain.readyToSend-heading": {
         "message": "Almost done."
     },
@@ -337,10 +352,13 @@
         "message": "Technical report (PDF)"
     },
     "complain.readyToSend-traffic-recording": {
-        "message": "Traffic recording (HAR)"
+        "message": "Traffic recording first part (no interaction, HAR)"
+    },
+    "complain.readyToSend-traffic-recording-interaction": {
+        "message": "Traffic recording second part (interaction, HAR)"
     },
     "complain.readyToSend-controller-communication": {
-        "message": "Communication with the website operator (ZIP)"
+        "message": "Communication with the website operator (you have to compile that yourself)"
     },
     "complain.readyToSend-dpa-contact-details": {
         "message": "Contact details of the DPA"

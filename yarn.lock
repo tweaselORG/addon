@@ -5915,9 +5915,21 @@ relaxed-json@1.0.3:
     chalk "^2.4.2"
     commander "^2.6.0"
 
-"reporthar@https://pkg.pr.new/reporthar@5d19a02":
+"reporthar@https://pkg.pr.new/reporthar@6b14bda":
   version "0.2.0"
-  resolved "https://pkg.pr.new/reporthar@5d19a02#17b068b79d4a322ba0d57674bff4a7733d39ae58"
+  resolved "https://pkg.pr.new/reporthar@6b14bda#3f3d8c6155916b7909137a8bb0a61a0687f1e7bb"
+  dependencies:
+    "@myriaddreamin/typst-ts-web-compiler" "^0.4.1"
+    "@myriaddreamin/typst.ts" "^0.4.1"
+    "@tweasel/nunjucks" "^3.2.4-tweasel1"
+    hexy "^0.3.5"
+    papaparse "^5.4.1"
+    safe-buffer "^5.2.1"
+    trackhar "^1.0.0"
+
+"reporthar@https://pkg.pr.new/reporthar@6b6face":
+  version "0.2.0"
+  resolved "https://pkg.pr.new/reporthar@6b6face#9f4a06b0ea4f3888553ead2f5a072ec6f9386a19"
   dependencies:
     "@myriaddreamin/typst-ts-web-compiler" "^0.4.1"
     "@myriaddreamin/typst.ts" "^0.4.1"

@@ -257,7 +257,7 @@ export const Analysis = (props: AnalysisPageProps) => {
                                 headingLevel={3}
                             />
                         </>
-                    ) : (
+                    ) : !proceedingMeta.complaintSent ? (
                         <>
                             <MarkupText id="analysis.awaiting-complaint" />
 
@@ -286,6 +286,8 @@ export const Analysis = (props: AnalysisPageProps) => {
                                 headingLevel={3}
                             />
                         </>
+                    ) : (
+                        <MarkupText id={`analysis.complaint-sent-${proceedingMeta.complaintType!}`} />
                     )}
                 </>
             )}
