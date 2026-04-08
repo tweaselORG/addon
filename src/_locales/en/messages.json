@@ -1,0 +1,413 @@
+{
+    "extensionName": {
+        "message": "Tweasel"
+    },
+    "extensionDescription": {
+        "message": "Detect the tracking websites perform while you browse and complain about illegal tracking with the data protection authorities."
+    },
+    "extensionAuthor": {
+        "message": "Tweasel by Datenanfragen.de e. V."
+    },
+
+    "common.loading": {
+        "message": "Loading, please wait…"
+    },
+    "common.continue": {
+        "message": "Continue"
+    },
+    "common.yes": {
+        "message": "yes"
+    },
+    "common.no": {
+        "message": "no"
+    },
+
+    "home.title": {
+        "message": "Tweasel"
+    },
+    "home.explanation": {
+        "message": "Enter the URL of a website to analyze it."
+    },
+    "home.start-analysis": {
+        "message": "Start an analysis"
+    },
+    "home.siteUrl": {
+        "message": "Website URL"
+    },
+    "home.analyze": {
+        "message": "Analyze"
+    },
+    "home.missing-containers": {
+        "message": "This extension requires the <a href=\"https://wiki.mozilla.org/Security/Contextual_Identity_Project/Containers\">Containers feature of Firefox</a> to be activiated to isolate the webpages context. Please set <code>privacy.userContext.enabled</code> in your <code>about:config</code> to <code>true</code>."
+    },
+    "home.proceedings": {
+        "message": "Your existing proceedings"
+    },
+    "home.delete-proceeding": {
+        "message": "Delete the proceeding with the reference $REFERENCE$",
+        "placeholders": {
+            "reference": {
+                "content": "$1",
+                "example": "2025-YIJQH95"
+            }
+        }
+    },
+    "home.confirm-delete-proceeding": {
+        "message": "Are you sure you want to delete the proceeding with the reference $REFERENCE$? This cannot be undone.",
+        "placeholders": {
+            "reference": {
+                "content": "$1",
+                "example": "2025-YIJQH95"
+            }
+        }
+    },
+    "home.started-at": {
+        "message": "Started at"
+    },
+    "home.reference": {
+        "message": "Reference"
+    },
+    "home.site-url": {
+        "message": "Site URL"
+    },
+
+    "analysis.title": {
+        "message": "Analysis of $SITE$",
+        "placeholders": {
+            "site": {
+                "content": "$1",
+                "example": "https://example.org"
+            }
+        }
+    },
+    "analysis.initial-first-step": {
+        "message": "We are currently analyzing the website and recording its network traffic in the background for 30 seconds. In this first step, we are analyzing the website’s behaviour without any user interaction to make sure that no consent has been given. To do this, we have created a hidden tab (which your browser may alert you about). In the next step, you’ll be able to browse and interact with the website. Please wait until then…"
+    },
+    "analysis.initial-second-step": {
+        "message": "The no-interaction analysis has now concluded and we have unhidden the tab. You should now browse the site a bit and interact with its various functions. If the site asks you for your consent, make sure to either not interact with the prompt or actively refuse. Come back here when you’re done to proceed to the next step."
+    },
+    "analysis.finished-interacting": {
+        "message": "I have finished interacting"
+    },
+    "analysis.initial-analysis-found-nothing": {
+        "message": "The analysis of the website has finished. We did <strong>not</strong> detect any tracking data transmissions without consent."
+    },
+    "analysis.initial-analysis-found-nothing-what-heading": {
+        "message": "What does that mean?"
+    },
+    "analysis.initial-analysis-found-nothing-what-explanation": {
+        "message": "<p>This could mean that the website genuinely doesn’t perform any tracking without consent. However, it is also possible that we missed something.</p><p>We have made the decision to design our analysis framework in such a way to rather miss something than produce false positives, which is why we are only detecting tracking endpoints that we have researched and classified as such. This means that we <em>will</em> miss some tracking data transmissions but it enables us to say for sure that tracking actually occurred if we do detect something, which is important for the complaints.</p>"
+    },
+    "analysis.second-step-consented-explanation": {
+        "message": "<p>The analysis of the website has finished. We did <strong>not</strong> detect any tracking data transmissions without consent in the first step without interaction. And while we did detect the below tracking data transmissions in the second step with interaction, you have given consent for them, which means that they might be legal and we cannot proceed with a complaint.</p><p>You can start a new analysis for the same website, making sure not to consent this time.</p>"
+    },
+    "analysis.second-step-consented-restart": {
+        "message": "Start new analysis"
+    },
+    "analysis.awaiting-controller-notice": {
+        "message": "<p>The analysis of the website has finished. We <strong>have detected</strong> tracking data transmissions without consent, which you can see below.</p><p>This could be in violation of applicable data protection law. If you believe that it is, you can now send a notice to the operator giving them the opportunity to remedy the problem.</p>"
+    },
+    "analysis.no-interaction-transmissions": {
+        "message": "Tracking data transmissions from first step without interaction"
+    },
+    "analysis.interaction-transmissions": {
+        "message": "Tracking data transmissions from second step with interaction"
+    },
+    "analysis.send-notice": {
+        "message": "Send notice"
+    },
+    "analysis.awaiting-controller-response": {
+        "message": "<p>After we had detected the below tracking data transmissions without consent, you have sent a notice to the website operator. They now have until <strong>$DEADLINE$</strong> to respond.</p><p>Once the correspondence with the website operator is done or the deadline has expired, you can continue.</p>",
+        "placeholders": {
+            "deadline": {
+                "content": "$1",
+                "example": "May 25, 2018"
+            }
+        }
+    },
+    "analysis.continue-with-process": {
+        "message": "Continue with the process"
+    },
+    "analysis.consent-question": {
+        "message": "When you just interacted with the website, did it ask for your consent for data protection purposes at any point? And if so, what did you do?"
+    },
+    "analysis.consent-question-not-asked": {
+        "message": "The site didn’t ask for consent."
+    },
+    "analysis.consent-question-given": {
+        "message": "The site asked for consent and I accepted."
+    },
+    "analysis.consent-question-ignored": {
+        "message": "The site asked for consent but I ignored the prompt."
+    },
+    "analysis.consent-question-refused": {
+        "message": "The site asked for consent and I refused."
+    },
+    "analysis.consent-question-not-sure": {
+        "message": "I’m not sure"
+    },
+    "analysis.second-first-step": {
+        "message": "We are now re-analyzing the website to detect whether it still performs tracking without consent. Just like the first time, we are initially analyzing the website’s behaviour without any user interaction to make sure that no consent has been given. Please wait while that happens…"
+    },
+    "analysis.second-second-step": {
+        "message": "The no-interaction analysis has now concluded and we have unhidden the tab. You should now once again browse the site a bit and interact with its various functions. If the site asks you for your consent, make sure to either not interact with the prompt or actively refuse. Come back here when you’re done to proceed to the next step."
+    },
+    "analysis.second-analysis-found-nothing": {
+        "message": "The re-analysis of the website has finished. We did <strong>not</strong> detect any tracking data transmissions without consent anymore. Congrats, looks like your notice helped improve the situation for everyone!"
+    },
+    "analysis.awaiting-complaint": {
+        "message": "<p>The re-analysis of the website has finished. We have <strong>still detected</strong> tracking data transmissions without consent, which you can see below.</p><p>You can now raise this issue with the competent data protection authority to have them check whether the website violates data protection law. If so, they can order the operator to stop the tracking.</p>"
+    },
+    "analysis.contact-dpa": {
+        "message": "Contact data protection authority"
+    },
+    "analysis.complaint-sent-formal": {
+        "message": "<p>You have told us that you have sent the complaint. Now it’s time to wait for the DPA to process it. According to Art. 78(2) GDPR, the DPA has to inform you on the progress or outcome of the complaint within three months. However, in our experience, it is unfortunately common that it takes them much longer to do so. If after six months or a year you still haven’t received a meaningful response, it makes sense to send them a reminder.</p>"
+    },
+    "analysis.complaint-sent-informal": {
+        "message": "<p>You have told us that you have sent the complaint. Now it’s time to wait for the DPA to process it. As you said that you are not a regular user of the website, you have only sent an informal complaint and the DPA is unfortunately not legally required to inform you about what they do regarding your complaint. You probably shouldn’t expect a meaningful response from them.</p><p>However, our goal is to raise awareness and draw the attention of the DPAs to these violations. It is important that the authorities are attentive to our grievances to facilitate change in the long run. We hope that this whole process can be part of a necessary political shift that prioritises data protection and prohibits the unwanted tracking activities of companies.</p><p>Thank you for taking the time to help us on our mission.</p>"
+    },
+
+    "send-notice.generating": {
+        "message": "Generating documents. This can take a moment. Please wait…"
+    },
+    "send-notice.not-yet": {
+        "message": "You cannot send a notice regarding this proceeding yet."
+    },
+    "send-notice.title": {
+        "message": "Send notice to the operator"
+    },
+    "send-notice.explanation": {
+        "message": "We have generated the message that you can send to the website operator to inform them of the tracking data transmissions that you have detected and give them the opportunity to remedy them. You’ll send the message using your own email. Please find the correct contact address in the website’s privacy policy."
+    },
+    "send-notice.attachment-note": {
+        "message": "Make sure to attach the files listed below to the email!"
+    },
+    "send-notice.subject": {
+        "message": "Subject"
+    },
+    "send-notice.text": {
+        "message": "Text"
+    },
+    "send-notice.template-subject": {
+        "message": "Data protection violations in your website “$SITE$” (My reference: $REFERENCE$)",
+        "placeholders": {
+            "site": {
+                "content": "$1",
+                "example": "https://example.org"
+            },
+            "reference": {
+                "content": "$2",
+                "example": "2025-YIJQH95"
+            }
+        }
+    },
+    "send-notice.template-text": {
+        "message": "To Whom It May Concern:\n\nI unfortunately had to notice that your website “$SITE$” performs tracking data transmissions without consent. I believe that this is in violation of applicable data protection law.\n\nPlease refer to the attached notice and technical report for further details. Please especially note the voluntary 60 day grace period that I am giving you before filing a complaint with the data protection authorities.\n\nYours sincerely,",
+        "placeholders": {
+            "site": {
+                "content": "$1",
+                "example": "https://example.org"
+            }
+        }
+    },
+    "send-notice.sent-message": {
+        "message": "I have sent the message"
+    },
+    "send-notice.attachments": {
+        "message": "Attachments"
+    },
+    "send-notice.notice": {
+        "message": "Notice (PDF)"
+    },
+    "send-notice.technical-report": {
+        "message": "Technical report (PDF)"
+    },
+    "send-notice.traffic-recording": {
+        "message": "Traffic recording first part (no interaction, HAR)"
+    },
+    "send-notice.traffic-recording-interaction": {
+        "message": "Traffic recording second part (interaction, HAR)"
+    },
+
+    "evaluate-response.heading": {
+        "message": "How did the website operator react?"
+    },
+    "evaluate-response.explanation": {
+        "message": "We are only interested in statements that actually respond to the tracking data transmissions that you mentioned in your notice. For this question, you can disregard confirmations of receipt, deflections, etc."
+    },
+    "evaluate-response.explanation-deadline": {
+        "message": "If the website operator has not responded yet, please wait until the deadline has expired ($DEADLINE$) before continuing.",
+        "placeholders": {
+            "deadline": {
+                "content": "$1",
+                "example": "May 25, 2018"
+            }
+        }
+    },
+    "evaluate-response.no-notice-yet": {
+        "message": "You have not sent a notice for this proceeding yet and thus cannot evaluate a response."
+    },
+    "evaluate-response.reponse-promise": {
+        "message": "The website operator told me that they removed the tracking."
+    },
+    "evaluate-response.reponse-denial": {
+        "message": "The website operator has denied that there are violations."
+    },
+    "evaluate-response.reponse-none": {
+        "message": "The website operator has not responded (concerning the tracking)."
+    },
+    "evaluate-response.why-not-yet": {
+        "message": "Why can I not select this?"
+    },
+    "evaluate-response.why-not-yet-explanation": {
+        "message": "You have given the website operator until $DEADLINE$ to respond. Please wait until the deadline has expired or until they have responded before continuing.",
+        "placeholders": {
+            "deadline": {
+                "content": "$1",
+                "example": "May 25, 2018"
+            }
+        }
+    },
+
+    "complain.not-yet": {
+        "message": "You cannot send a complaint regarding this proceeding yet."
+    },
+    "complain.no-tracking": {
+        "message": "We did not detect any tracking data transmissions without consent anymore, so there is no need to send a complaint regarding this proceeding."
+    },
+    "complain.askIsUserOfWebsite-heading": {
+        "message": "Are you a user of the website?"
+    },
+    "complain.askIsUserOfWebsite-explanation": {
+        "message": "Do you regularly use the website in a browser profile that is used exclusively by you?"
+    },
+    "complain.askControllerAddress-heading": {
+        "message": "Who is responsible for the website?"
+    },
+    "complain.askControllerAddress-explanation": {
+        "message": "Unfortunately, we are not able to automatically find the name and address of the company resposible for the website. Please find them yourself and enter them below. You should be able to find this information listed as the “controller” in the website’s privacy policy."
+    },
+    "complain.askControllerAddress-name": {
+        "message": "Website operator legal name"
+    },
+    "complain.askControllerAddress-name-placeholder": {
+        "message": "Example Corp."
+    },
+    "complain.askControllerAddress-address": {
+        "message": "Website operator address"
+    },
+    "complain.askControllerAddress-address-placeholder": {
+        "message": "123 Some Street\n12345 Some City\nSome Country"
+    },
+    "complain.askControllerAddress-source": {
+        "message": "Source for the website operator details"
+    },
+    "complain.askControllerAddress-source-placeholder": {
+        "message": "https://example.com/privacy-policy"
+    },
+    "complain.askAuthority-heading": {
+        "message": "Which authority do you want to contact?"
+    },
+    "complain.askAuthority-explanation": {
+        "message": "<p>Please select the data protection authority (DPA) that you want to contact about this matter. You can choose the authority at the your place of habitual residence (i.e. where you live), your place of work, or the place of the alleged infringement (i.e. where the website operator is based).</p><p>You’ll note that the list below is not complete. Unfortunately, we can only support authorities that accept complaints in languages we have templates for.</p>"
+    },
+    "complain.readyToSend-generating": {
+        "message": "Generating technical report. This can take a moment. Please wait…"
+    },
+    "complain.readyToSend-heading": {
+        "message": "Almost done."
+    },
+    "complain.readyToSend-explanation": {
+        "message": "You’re almost done. The DPA will need to know who the complainant is—that’s you. Since this is quite sensitive information, we are only processing it locally in your browser and never sending it to our servers."
+    },
+    "complain.readyToSend-complainant": {
+        "message": "You will at least need to provide your name. Some authorities also require you to provide your full address."
+    },
+    "complain.readyToSend-contact-details": {
+        "message": "Additionally, you also need to provide the authority with a way to contact you. This can be an email address or a postal address."
+    },
+    "complain.readyToSend-agree-to-unencrypted-communication": {
+        "message": "Finally, do you agree to being contacted via <em>unencrypted</em> email?"
+    },
+    "complain.readyToSend-yes": {
+        "message": "yes"
+    },
+    "complain.readyToSend-no-letter": {
+        "message": "no (you will likely receive a letter)"
+    },
+    "complain.readyToSend-generate-complaint": {
+        "message": "Generate complaint"
+    },
+    "complain.readyToSend-send-explanation": {
+        "message": "After you’ve downloaded the generated complaint, you will need to send it to the DPA yourself."
+    },
+    "complain.readyToSend-attachments": {
+        "message": "Attachments"
+    },
+    "complain.readyToSend-attachment-note": {
+        "message": "Make sure to attach the complaint as well as the files listed below to your message to the DPA!"
+    },
+    "complain.readyToSend-technical-report": {
+        "message": "Technical report (PDF)"
+    },
+    "complain.readyToSend-traffic-recording": {
+        "message": "Traffic recording first part (no interaction, HAR)"
+    },
+    "complain.readyToSend-traffic-recording-interaction": {
+        "message": "Traffic recording second part (interaction, HAR)"
+    },
+    "complain.readyToSend-controller-communication": {
+        "message": "Communication with the website operator (you have to compile that yourself)"
+    },
+    "complain.readyToSend-dpa-contact-details": {
+        "message": "Contact details of the DPA"
+    },
+    "complain.readyToSend-dpa-contact-details-explanation": {
+        "message": "You can choose your preferred way of contacting the DPA."
+    },
+    "complain.readyToSend-address": {
+        "message": "Address:"
+    },
+    "complain.readyToSend-email": {
+        "message": "Email address:"
+    },
+    "complain.readyToSend-webform": {
+        "message": "Webform:"
+    },
+    "complain.readyToSend-pgp-key": {
+        "message": "PGP key"
+    },
+    "complain.readyToSend-complaint-sent": {
+        "message": "I have sent the complaint"
+    },
+    "complain.sent-already": {
+        "message": "You have already sent a complaint regarding this proceeding."
+    },
+
+    "trackhar-result.tracker-intro": {
+        "message": "The website has sent $N$ request(s) to the tracker “$TRACKERNAME$”, transmitting at least the following information.",
+        "placeholders": {
+            "n": {
+                "content": "$1",
+                "example": "3"
+            },
+            "trackername": {
+                "content": "$2",
+                "example": "Google Analytics"
+            }
+        }
+    },
+    "trackhar-result.more-information": {
+        "message": "More information"
+    },
+    "trackhar-result.data-type": {
+        "message": "Data type"
+    },
+    "trackhar-result.transmitted-values": {
+        "message": "Transmitted value(s)"
+    },
+    "trackhar-result.no-transmissions-detected": {
+        "message": "no transmissions detected"
+    }
+}

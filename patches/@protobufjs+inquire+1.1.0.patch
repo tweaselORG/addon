@@ -1,0 +1,24 @@
+diff --git a/node_modules/@protobufjs/inquire/index.js b/node_modules/@protobufjs/inquire/index.js
+index 33778b5..0498178 100644
+--- a/node_modules/@protobufjs/inquire/index.js
++++ b/node_modules/@protobufjs/inquire/index.js
+@@ -8,10 +8,14 @@ module.exports = inquire;
+  * @returns {?Object} Required module if available and not empty, otherwise `null`
+  */
+ function inquire(moduleName) {
+-    try {
+-        var mod = eval("quire".replace(/^/,"re"))(moduleName); // eslint-disable-line no-eval
+-        if (mod && (mod.length || Object.keys(mod).length))
+-            return mod;
+-    } catch (e) {} // eslint-disable-line no-empty
++    // Benni (2025-01-24): The use of `eval()` in the original function conflicts with the CSP for web extensions and
++    // since we are not running in Node, the `require()` was never going to suceed anyway.
++    // Cf.: https://github.com/protobufjs/protobuf.js/issues/593
++
++    // try {
++    //     var mod = eval("quire".replace(/^/,"re"))(moduleName); // eslint-disable-line no-eval
++    //     if (mod && (mod.length || Object.keys(mod).length))
++    //         return mod;
++    // } catch (e) {} // eslint-disable-line no-empty
+     return null;
+ }
